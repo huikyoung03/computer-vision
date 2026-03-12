@@ -669,15 +669,12 @@
     depth_map = fB / d 
 -> disparity를 depth로 변환
     
-    Depth 공식
+    - Depth 공식
     
-    Z = fB / d
-    
-    f : focal length
-    
-    B : baseline
-    
-    d : disparity
+        - Z = fB / d
+        - f : focal length
+        - B : baseline
+        - d : disparity
         
     np.mean()
 -> ROI 평균 disparity / depth 계산
