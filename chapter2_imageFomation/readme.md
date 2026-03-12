@@ -401,7 +401,8 @@
 - 세 ROI중 어떤 영역이 가장 가까운지, 어떤 영역이 가장 먼지 해
 
 ## 전체 코드 (03_depth.py)
-            import cv2
+'''python
+    import cv2
     import numpy as np
     from pathlib import Path
 
@@ -516,6 +517,7 @@
             "mean_disparity": mean_disp,
             "mean_depth": mean_depth
         }
+        
 
     # -------------------------------------------------------
     # 9. 결과 출력
@@ -634,6 +636,7 @@
     print(output_dir / "disparity_map.png")
     print(output_dir / "depth_map.png")
 
+'''
 ## 결과 
 
 <img width="1369" height="1221" alt="image" src="https://github.com/user-attachments/assets/9eab061f-c73b-4d35-a755-f2a9535c1607" />
