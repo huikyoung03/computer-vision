@@ -238,6 +238,20 @@
 
 ## 주요 코드 
 
+    np.mgrid() 
+-> 체크보드의 실제 좌표 격자 생성
+
+    cv2.findChessboardCorners(image, corner 개수) 
+-> 체크보드 코너 위치 검출 
+
+    cv2.cornerSubPix()
+코너 위치 정밀화
+
+    cv2.calibrateCamera(실제 세계 좌표, 이미지 좌표, 이미지 크기, none, none) 
+-> 카메라 내부 파라미터 및 왜곡 계수 계산
+
+    cv2.undistort()
+-> 렌즈 왜곡 보정
 
         
 
@@ -379,7 +393,14 @@
     print("저장 완료: rotation_transformation_result.jpg")
 
 ## 주요 코드 
-        
+
+    cv2.getRotationMatrix2D() 
+-> 회전 + 스케일 변환 행렬 생성
+
+    cv2.warpAffine()
+-> affine 변환 적용
+
+
 ## 결과 화면 
 
 ![rotation_transformation_result](https://github.com/user-attachments/assets/a07b9c88-08bb-4689-9b0d-3c6075b9456c)
@@ -635,6 +656,32 @@
     print(output_dir / "right_with_roi.png")
     print(output_dir / "disparity_map.png")
     print(output_dir / "depth_map.png")
+
+
+## 주요 코드 
+
+    cv2.StereoBM_create() 
+-> Stereo Block Matching 객체 생성
+    
+    stereo.compute() 
+-> disparity map 계산
+ 
+    depth_map = fB / d 
+-> disparity를 depth로 변환
+    Depth 공식
+    Z = fB / d
+    f : focal length
+    B : baseline
+    d : disparity
+        
+    np.mean()
+-> ROI 평균 disparity / depth 계산
+    
+    cv2.applyColorMap()
+-> disparity/depth 시각화
+    
+    cv2.rectangle(), cv2.putText()
+-> ROI 표시
 
 ## 결과 
 
