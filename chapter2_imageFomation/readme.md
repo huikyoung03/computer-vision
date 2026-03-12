@@ -671,13 +671,13 @@
 
 Depth 공식
 
-    - Z = fB / d
+Z = fB / d
 
-    - f : focal length
+f : focal length
 
-    - B : baseline
+B : baseline
 
-    - d : disparity
+d : disparity
     
     np.mean()
 -> ROI 평균 disparity / depth 계산
