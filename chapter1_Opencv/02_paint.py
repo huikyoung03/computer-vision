@@ -85,10 +85,10 @@ def main():
 
         if key == ord('q'):               # 'q' 키가 눌리면
             break                         # 반복문 종료 → 프로그램 종료
-        elif key in (ord('+')):           # '+' 키가 눌리면
+        elif key == ord('+'):             # '+' 키가 눌리면
             state["brush"] = clamp(state["brush"] + 1, BRUSH_MIN, BRUSH_MAX)
                                           # 붓 크기를 1 증가시키고 최대값 15로 제한
-        elif key in (ord('-')):           # '-' 키가 눌리면
+        elif key == ord('-'):             # '-' 키가 눌리면
             state["brush"] = clamp(state["brush"] - 1, BRUSH_MIN, BRUSH_MAX)
                                           # 붓 크기를 1 감소시키고 최소값 1로 제한
 
