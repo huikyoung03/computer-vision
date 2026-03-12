@@ -119,35 +119,12 @@
         cv2.imwrite("calibration_result.jpg", result)
         print("\n왜곡 보정 결과 저장 완료: calibration_result.jpg")
 
----
+
 
 ## 주요 코드 
 
-        import cv2 as cv
-        import numpy as np
 
-        def main():
-            img_path = "soccer.jpg"
-            img = cv.imread(img_path)
-
-            if img is None:
-                print("이미지를 불러올 수 없습니다.")
-                return
-
-            scale = 0.5
-            img = cv.resize(img, None, fx=scale, fy=scale)
-
-            gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            gray_bgr = cv.cvtColor(gray, cv.COLOR_GRAY2BGR)
-
-            combined = np.hstack((img, gray_bgr))
-
-            cv.imshow("Original | Grayscale", combined)
-            cv.waitKey(0)
-            cv.destroyAllWindows()
-
-        if __name__ == "__main__":
-            main()
+        
 
 ## 결과 화면 
 <img width="755" height="316" alt="image" src="https://github.com/user-attachments/assets/bee6fdcf-0e65-437e-8d7d-79778294ac72" />
@@ -155,119 +132,69 @@
 ![calibration_result](https://github.com/user-attachments/assets/f31f57bc-664f-49b7-b808-330ff40e012f)
 
 ---
-# 2. 마우스 입력을 이용한 붓질 기능
+# 2. 이미지 Rotation & Transformation
 
 ## 문제
 
-마우스를 이용하여 이미지 위에 그림을 그리고,
-키보드 입력을 이용해 붓 크기를 조절하는 기능을 구현한다.
+한 장의 이미지에 회전, 크기 조절, 평행 이동을 적용한다.
 
 
 ## 요구사항
 
-- 초기 붓 크기 : 5
-- "+" 입력 → 붓 크기 증가
-- "-" 입력 → 붓 크기 감소
-- 붓 크기 범위 : 1 ~ 15
-- 좌클릭 → 파란색
-- 우클릭 → 빨간색
-- 드래그로 연속 그리기
-- q 키 → 프로그램 종료
+- 이미지의 중심 기준으로 +30도 회전
+- 회전과 동시에 크기를 0.8로 조절
+- 그 결과를 x축 방향으로 +80px, y축 방향으로 -40px만큼 평행이동
 
+## 전체 코드 (02_rotation_transformation.py)
 
-## 주요 코드
-
-- cv.setMouseCallback(window, callback) : 마우스 이벤트 처리
-- cv.circle(img, (x,y), radius, color, -1) : 붓 효과 구현
-- cv.waitKey() : 키보드 입력 처리
-- clamp() : 붓 크기를 최소/최대 범위 내로 제한
-
-## 전체 코드 (02_paint.py)
-
-        import cv2 as cv
+        import cv2
         import numpy as np
+        
+        # 이미지 경로
+        IMAGE_PATH = "./images/rose.png"
+        
+        img = cv2.imread(IMAGE_PATH)
+        if img is None:
+            raise FileNotFoundError(f"이미지를 찾을 수 없습니다: {IMAGE_PATH}")
+        
+         #이미지 크기 변경
+        scale = 0.5                                     # 이미지 크기 축소 (원본의 50%)    
+        img = cv2.resize(img, None, fx=scale, fy=scale)
+        
+        h, w = img.shape[:2]
+        center = (w // 2, h // 2)
+        
+        # 회전 + 스케일
+        angle = 30
+        scale = 0.8
+        
+        M = cv2.getRotationMatrix2D(center, angle, scale)
+        
+        # 평행이동 추가
+        tx = 80   # x축 +80
+        ty = -40  # y축 -40
+        M[0, 2] += tx
+        M[1, 2] += ty
+        
+        # 변환 적용
+        transformed = cv2.warpAffine(img, M, (w, h))
+        
+        # 결과 비교
+        result = np.hstack([img, transformed])
+        
+        cv2.imshow("Original | Rotated + Scaled + Translated", result)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        
+        cv2.imwrite("rotation_transformation_result.jpg", result)
+        print("저장 완료: rotation_transformation_result.jpg")
 
-        BRUSH_MIN = 1
-        BRUSH_MAX = 15
 
-        state = {
-            "img": None,
-            "drawing": False,
-            "button": None,
-            "brush": 5
-        }
+## 주요 코드 
+        
+## 결과 화면 
 
-        def clamp(v, lo, hi):
-            return max(lo, min(hi, v))
-
-        def mouse_cb(event, x, y, flags, param):
-            img = state["img"]
-            if img is None:
-                return
-
-            if event == cv.EVENT_LBUTTONDOWN:
-                state["drawing"] = True
-                state["button"] = cv.EVENT_LBUTTONDOWN
-                cv.circle(img, (x, y), state["brush"], (255, 0, 0), -1)
-
-            elif event == cv.EVENT_RBUTTONDOWN:
-                state["drawing"] = True
-                state["button"] = cv.EVENT_RBUTTONDOWN
-                cv.circle(img, (x, y), state["brush"], (0, 0, 255), -1)
-
-            elif event == cv.EVENT_MOUSEMOVE:
-                if state["drawing"]:
-                    if state["button"] == cv.EVENT_LBUTTONDOWN:
-                        cv.circle(img, (x, y), state["brush"], (255, 0, 0), -1)
-                    elif state["button"] == cv.EVENT_RBUTTONDOWN:
-                        cv.circle(img, (x, y), state["brush"], (0, 0, 255), -1)
-
-            elif event in (cv.EVENT_LBUTTONUP, cv.EVENT_RBUTTONUP):
-                state["drawing"] = False
-                state["button"] = None
-
-        def main():
-            img_path = "soccer.jpg"
-            img = cv.imread(img_path)
-
-            if img is None:
-                print(f"[ERROR] 이미지를 불러오지 못했습니다: {img_path}")
-                return
-
-            state["img"] = img
-
-            win = "Paint on Image (+/- brush, q quit)"
-            cv.namedWindow(win)
-            cv.setMouseCallback(win, mouse_cb)
-
-            while True:
-                view = state["img"].copy()
-
-                cv.putText(
-                    view,
-                    f"Brush: {state['brush']} (+/-) q:quit",
-                    (10, 30),
-                    cv.FONT_HERSHEY_SIMPLEX,
-                    0.8,
-                    (0, 0, 0),
-                    2
-                )
-
-                cv.imshow(win, view)
-
-                key = cv.waitKey(1) & 0xFF
-
-                if key == ord('q'):
-                    break
-                elif key in (ord('+'), ord('=')):
-                    state["brush"] = clamp(state["brush"] + 1, BRUSH_MIN, BRUSH_MAX)
-                elif key in (ord('-'), ord('_')):
-                    state["brush"] = clamp(state["brush"] - 1, BRUSH_MIN, BRUSH_MAX)
-
-            cv.destroyAllWindows()
-
-        if __name__ == "__main__":
-            main()
+![rotation_transformation_result](https://github.com/user-attachments/assets/a07b9c88-08bb-4689-9b0d-3c6075b9456c)
 
 ---
 
