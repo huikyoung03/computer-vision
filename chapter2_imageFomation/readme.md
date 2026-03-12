@@ -121,7 +121,7 @@
 
 ---
 
-## 전체 코드 (01_gray.py)
+## 주요 코드 
 
         import cv2 as cv
         import numpy as np
@@ -149,7 +149,10 @@
         if __name__ == "__main__":
             main()
 
+## 결과 화면 
+<img width="755" height="316" alt="image" src="https://github.com/user-attachments/assets/bee6fdcf-0e65-437e-8d7d-79778294ac72" />
 
+![calibration_result](https://github.com/user-attachments/assets/f31f57bc-664f-49b7-b808-330ff40e012f)
 
 ---
 # 2. 마우스 입력을 이용한 붓질 기능
