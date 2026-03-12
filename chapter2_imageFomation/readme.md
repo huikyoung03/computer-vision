@@ -13,7 +13,7 @@
 - cv2.undistort()를 사용하여 왜곡 보정한 결과를 시각화한다.
 
 ## 전체 코드 (01_calibration.py)
-'''python
+
     import cv2
     import numpy as np
     import glob
@@ -234,7 +234,7 @@
 
     print("\n왜곡 보정 결과 저장 완료: calibration_result.jpg")
 
-'''
+
 
 ## 주요 코드 
 
@@ -261,7 +261,7 @@
 - 그 결과를 x축 방향으로 +80px, y축 방향으로 -40px만큼 평행이동
 
 ## 전체 코드 (02_rotation_transformation.py)
-'''python
+
     import cv2
     import numpy as np
     from pathlib import Path
@@ -377,7 +377,7 @@
     cv2.imwrite("./outputs/rotation_transformation/rotation_transformation_result.jpg", result)
 
     print("저장 완료: rotation_transformation_result.jpg")
-'''
+
 ## 주요 코드 
         
 ## 결과 화면 
@@ -401,7 +401,7 @@
 - 세 ROI중 어떤 영역이 가장 가까운지, 어떤 영역이 가장 먼지 해
 
 ## 전체 코드 (03_depth.py)
-'''python
+
     import cv2
     import numpy as np
     from pathlib import Path
@@ -636,7 +636,6 @@
     print(output_dir / "disparity_map.png")
     print(output_dir / "depth_map.png")
 
-'''
 ## 결과 
 
 <img width="1369" height="1221" alt="image" src="https://github.com/user-attachments/assets/9eab061f-c73b-4d35-a755-f2a9535c1607" />
