@@ -198,29 +198,216 @@
 
 ---
 
-# 3. 마우스로영역선택및ROI(관심영역) 추출
+# 3. stereo disparity 기반 depth 추정 
 
 ## 문제
 
-이미지를 불러온 후 마우스를 이용하여 드래그 방식으로
-관심 영역(ROI, Region of Interest)을 선택한다.
+같은 장면을 왼쪽, 오른쪽 두 카메라에서 촬영한 두 장의 이미지를 활용해 깊이를 추정 
+두 이미지에서 같은 물체가 얼마나 옆으로 이동해 보이는지 계산하여 물체가 카메라에서 얼마나 떨어져 있는지 (depth)를 구함
 
-선택된 영역은 별도의 창에 출력되며,
-키보드 입력을 통해 영역을 저장하거나 초기화할 수 있도록 구현한다.
+## 요구사항
 
+- 입력 이미지를 그레이 스케일로 변환 후, cv2.StereoBM_create()를 사용하여 disparity map 계산
+- Disparity >0 인 픽셀만 사용하여 depth map 계산
+- ROI Painting, Frog, Teddy 각각에 대해 평균 disparity와 평균 depth를 계산
+- 세 ROI중 어떤 영역이 가장 가까운지, 어떤 영역이 가장 먼지 해
 
-
-## 주요 코드
-
-- cv.setMouseCallback() : 마우스 이벤트 처리
-- cv.rectangle() : 선택 영역 표시
-- numpy slicing : ROI 영역 추출
-- cv.imwrite() : ROI 이미지 저장
+## 전체 코드 (03_depth.py)
+        import cv2
+        import numpy as np
+        from pathlib import Path
+        
+        # 출력 폴더 생성
+        output_dir = Path("./outputs")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 좌/우 이미지 불러오기
+        left_color = cv2.imread("./images/left.png")
+        right_color = cv2.imread("./images/right.png")
+        
+        if left_color is None or right_color is None:
+            raise FileNotFoundError("좌/우 이미지를 찾지 못했습니다.")
+        
+        # 카메라 파라미터
+        f = 700.0
+        B = 0.12
+        
+        # ROI 설정
+        rois = {
+            "Painting": (55, 50, 130, 110),
+            "Frog": (90, 265, 230, 95),
+            "Teddy": (310, 35, 115, 90)
+        }
+        
+        # 그레이스케일 변환
+        left_gray = cv2.cvtColor(left_color, cv2.COLOR_BGR2GRAY)
+        right_gray = cv2.cvtColor(right_color, cv2.COLOR_BGR2GRAY)
+        
+        # -----------------------------
+        # 1. Disparity 계산
+        # -----------------------------
+        num_disparities = 16 * 6   # 16의 배수
+        block_size = 15            # 홀수
+        
+        stereo = cv2.StereoBM_create(
+            numDisparities=num_disparities,
+            blockSize=block_size
+        )
+        
+        disparity = stereo.compute(left_gray, right_gray).astype(np.float32) / 16.0
+        
+        # -----------------------------
+        # 2. Depth 계산
+        # Z = fB / d
+        # -----------------------------
+        depth_map = np.zeros_like(disparity, dtype=np.float32)
+        
+        valid_mask = disparity > 0
+        depth_map[valid_mask] = (f * B) / disparity[valid_mask]
+        
+        # -----------------------------
+        # 3. ROI별 평균 disparity / depth 계산
+        # -----------------------------
+        results = {}
+        
+        for name, (x, y, w, h) in rois.items():
+            roi_disp = disparity[y:y+h, x:x+w]
+            roi_depth = depth_map[y:y+h, x:x+w]
+        
+            roi_valid = roi_disp > 0
+        
+            if np.any(roi_valid):
+                mean_disp = np.mean(roi_disp[roi_valid])
+                mean_depth = np.mean(roi_depth[roi_valid])
+            else:
+                mean_disp = 0.0
+                mean_depth = 0.0
+        
+            results[name] = {
+                "mean_disparity": mean_disp,
+                "mean_depth": mean_depth
+            }
+        
+        # -----------------------------
+        # 4. 결과 출력
+        # -----------------------------
+        print("=== ROI별 평균 Disparity / Depth ===")
+        for name, values in results.items():
+            print(f"{name}")
+            print(f"  Mean Disparity : {values['mean_disparity']:.3f}")
+            print(f"  Mean Depth     : {values['mean_depth']:.3f} m")
+        
+        valid_results = {k: v for k, v in results.items() if v["mean_disparity"] > 0}
+        
+        if len(valid_results) > 0:
+            nearest = max(valid_results.items(), key=lambda x: x[1]["mean_disparity"])
+            farthest = max(valid_results.items(), key=lambda x: x[1]["mean_depth"])
+        
+            print("\n=== 해석 ===")
+            print(f"가장 가까운 ROI: {nearest[0]}")
+            print(f"가장 먼 ROI: {farthest[0]}")
+        else:
+            print("\n유효한 disparity가 있는 ROI가 없습니다.")
+        
+        # -----------------------------
+        # 5. disparity 시각화
+        # 가까울수록 빨강 / 멀수록 파랑
+        # -----------------------------
+        disp_tmp = disparity.copy()
+        disp_tmp[disp_tmp <= 0] = np.nan
+        
+        if np.all(np.isnan(disp_tmp)):
+            raise ValueError("유효한 disparity 값이 없습니다.")
+        
+        d_min = np.nanpercentile(disp_tmp, 5)
+        d_max = np.nanpercentile(disp_tmp, 95)
+        
+        if d_max <= d_min:
+            d_max = d_min + 1e-6
+        
+        disp_scaled = (disp_tmp - d_min) / (d_max - d_min)
+        disp_scaled = np.clip(disp_scaled, 0, 1)
+        
+        disp_vis = np.zeros_like(disparity, dtype=np.uint8)
+        valid_disp = ~np.isnan(disp_tmp)
+        disp_vis[valid_disp] = (disp_scaled[valid_disp] * 255).astype(np.uint8)
+        
+        disparity_color = cv2.applyColorMap(disp_vis, cv2.COLORMAP_JET)
+        
+        # -----------------------------
+        # 6. depth 시각화
+        # 가까울수록 빨강 / 멀수록 파랑
+        # -----------------------------
+        depth_vis = np.zeros_like(depth_map, dtype=np.uint8)
+        
+        if np.any(valid_mask):
+            depth_valid = depth_map[valid_mask]
+        
+            z_min = np.percentile(depth_valid, 5)
+            z_max = np.percentile(depth_valid, 95)
+        
+            if z_max <= z_min:
+                z_max = z_min + 1e-6
+        
+            depth_scaled = (depth_map - z_min) / (z_max - z_min)
+            depth_scaled = np.clip(depth_scaled, 0, 1)
+        
+            # depth는 클수록 멀기 때문에 반전
+            depth_scaled = 1.0 - depth_scaled
+            depth_vis[valid_mask] = (depth_scaled[valid_mask] * 255).astype(np.uint8)
+        
+        depth_color = cv2.applyColorMap(depth_vis, cv2.COLORMAP_JET)
+        
+        # -----------------------------
+        # 7. Left / Right 이미지에 ROI 표시
+        # -----------------------------
+        left_vis = left_color.copy()
+        right_vis = right_color.copy()
+        
+        for name, (x, y, w, h) in rois.items():
+            cv2.rectangle(left_vis, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.putText(left_vis, name, (x, y - 8),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        
+            cv2.rectangle(right_vis, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.putText(right_vis, name, (x, y - 8),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        
+        # -----------------------------
+        # 8. 저장
+        # -----------------------------
+        cv2.imwrite(str(output_dir / "left_with_roi.png"), left_vis)
+        cv2.imwrite(str(output_dir / "right_with_roi.png"), right_vis)
+        cv2.imwrite(str(output_dir / "disparity_map.png"), disparity_color)
+        cv2.imwrite(str(output_dir / "depth_map.png"), depth_color)
+        
+        # -----------------------------
+        # 9. 출력
+        # -----------------------------
+        cv2.imshow("Left with ROI", left_vis)
+        cv2.imshow("Right with ROI", right_vis)
+        cv2.imshow("Disparity Map", disparity_color)
+        cv2.imshow("Depth Map", depth_color)
+        
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        
+        print("\n결과 이미지 저장 완료:")
+        print(output_dir / "left_with_roi.png")
+        print(output_dir / "right_with_roi.png")
+        print(output_dir / "disparity_map.png")
+        print(output_dir / "depth_map.png")
+        ## 주요 코드
+        
+        - cv.setMouseCallback() : 마우스 이벤트 처리
+        - cv.rectangle() : 선택 영역 표시
+        - numpy slicing : ROI 영역 추출
+        - cv.imwrite() : ROI 이미지 저장
 
 ## 결과 
 
+<img width="1369" height="1221" alt="image" src="https://github.com/user-attachments/assets/9eab061f-c73b-4d35-a755-f2a9535c1607" />
+
+<img width="628" height="367" alt="image" src="https://github.com/user-attachments/assets/575c785c-ed49-47cc-92fa-697eb05eb6a7" />
 
 
-##전체 코드 (03_roi.py)
-
-        import cv2 as cv
