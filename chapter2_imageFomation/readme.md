@@ -670,9 +670,13 @@
 -> disparity를 depth로 변환
 
 Depth 공식
+
     - Z = fB / d
+
     - f : focal length
+
     - B : baseline
+
     - d : disparity
     
     np.mean()
