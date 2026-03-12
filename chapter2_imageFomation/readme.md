@@ -13,8 +13,8 @@
 - cv2.undistort()를 사용하여 왜곡 보정한 결과를 시각화한다.
 
 ## 전체 코드 (01_calibration.py)
-
-            import cv2
+'''python
+    import cv2
     import numpy as np
     import glob
     from pathlib import Path
@@ -234,7 +234,7 @@
 
     print("\n왜곡 보정 결과 저장 완료: calibration_result.jpg")
 
-
+'''
 
 ## 주요 코드 
 
@@ -261,8 +261,8 @@
 - 그 결과를 x축 방향으로 +80px, y축 방향으로 -40px만큼 평행이동
 
 ## 전체 코드 (02_rotation_transformation.py)
-
-        import cv2
+'''python
+    import cv2
     import numpy as np
     from pathlib import Path
 
@@ -377,7 +377,7 @@
     cv2.imwrite("./outputs/rotation_transformation/rotation_transformation_result.jpg", result)
 
     print("저장 완료: rotation_transformation_result.jpg")
-
+'''
 ## 주요 코드 
         
 ## 결과 화면 
