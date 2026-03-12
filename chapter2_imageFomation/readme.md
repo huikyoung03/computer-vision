@@ -7,14 +7,14 @@
 
 ## 요구사항
 
-- 모든 이미지에서 체크보드 코너를 검출한다.
-- 체크보드의 실제좌표와 이미지에서 찾은 코너 좌표를 구성한다.
-- cv2.calibrateCamera()를 사용하여 카메라 내부 행렬k와 왜곡 계수를 구한다.
-- cv2.undistort()를 사용하여 왜곡 보정한 결과를 시각화한다.
+- 모든 이미지에서 체크보드 코너를 검출
+- 체크보드의 실제좌표와 이미지에서 찾은 코너 좌표를 구성
+- cv2.calibrateCamera()를 사용하여 카메라 내부 행렬k와 왜곡 계수를 구함
+- cv2.undistort()를 사용하여 왜곡 보정한 결과를 시각화
 
 ## 전체 코드 (01_calibration.py)
 
-            import cv2
+    import cv2
     import numpy as np
     import glob
     from pathlib import Path
@@ -238,6 +238,20 @@
 
 ## 주요 코드 
 
+    np.mgrid() 
+-> 체크보드의 실제 좌표 격자 생성
+
+    cv2.findChessboardCorners(image, corner 개수) 
+-> 체크보드 코너 위치 검출 
+
+    cv2.cornerSubPix()
+코너 위치 정밀화
+
+    cv2.calibrateCamera(실제 세계 좌표, 이미지 좌표, 이미지 크기, none, none) 
+-> 카메라 내부 파라미터 및 왜곡 계수 계산
+
+    cv2.undistort()
+-> 렌즈 왜곡 보정
 
         
 
@@ -262,7 +276,7 @@
 
 ## 전체 코드 (02_rotation_transformation.py)
 
-        import cv2
+    import cv2
     import numpy as np
     from pathlib import Path
 
@@ -379,7 +393,14 @@
     print("저장 완료: rotation_transformation_result.jpg")
 
 ## 주요 코드 
-        
+
+    cv2.getRotationMatrix2D() 
+-> 회전 + 스케일 변환 행렬 생성
+
+    cv2.warpAffine()
+-> affine 변환 적용
+
+
 ## 결과 화면 
 
 ![rotation_transformation_result](https://github.com/user-attachments/assets/a07b9c88-08bb-4689-9b0d-3c6075b9456c)
@@ -390,18 +411,18 @@
 
 ## 문제
 
-같은 장면을 왼쪽, 오른쪽 두 카메라에서 촬영한 두 장의 이미지를 활용해 깊이를 추정 
-두 이미지에서 같은 물체가 얼마나 옆으로 이동해 보이는지 계산하여 물체가 카메라에서 얼마나 떨어져 있는지 (depth)를 구함
+같은 장면을 왼쪽, 오른쪽 두 카메라에서 촬영한 두 장의 이미지를 활용해 깊이를 추정한다.
+두 이미지에서 같은 물체가 얼마나 옆으로 이동해 보이는지 계산하여 물체가 카메라에서 얼마나 떨어져 있는지 (depth)를 구한다.
 
 ## 요구사항
 
 - 입력 이미지를 그레이 스케일로 변환 후, cv2.StereoBM_create()를 사용하여 disparity map 계산
 - Disparity >0 인 픽셀만 사용하여 depth map 계산
 - ROI Painting, Frog, Teddy 각각에 대해 평균 disparity와 평균 depth를 계산
-- 세 ROI중 어떤 영역이 가장 가까운지, 어떤 영역이 가장 먼지 해
+- 세 ROI중 어떤 영역이 가장 가까운지, 어떤 영역이 가장 먼지 해석
 
 ## 전체 코드 (03_depth.py)
-'''python
+
     import cv2
     import numpy as np
     from pathlib import Path
@@ -636,7 +657,37 @@
     print(output_dir / "disparity_map.png")
     print(output_dir / "depth_map.png")
 
-'''
+
+## 주요 코드 
+
+    cv2.StereoBM_create() 
+-> Stereo Block Matching 객체 생성
+    
+    stereo.compute() 
+-> disparity map 계산
+ 
+    depth_map = fB / d 
+-> disparity를 depth로 변환
+
+    Depth 공식
+
+    Z = fB / d
+
+    f : focal length
+    
+    B : baseline
+    
+    d : disparity
+        
+    np.mean()
+-> ROI 평균 disparity / depth 계산
+    
+    cv2.applyColorMap()
+-> disparity/depth 시각화
+    
+    cv2.rectangle(), cv2.putText()
+-> ROI 표시
+
 ## 결과 
 
 <img width="1369" height="1221" alt="image" src="https://github.com/user-attachments/assets/9eab061f-c73b-4d35-a755-f2a9535c1607" />
