@@ -65,7 +65,7 @@ else:
 
     plt.tight_layout()
     plt.show()
-    ```
+```
 
 ## 주요 코드 
    
@@ -146,7 +146,7 @@ else:
     plt.title('SIFT Feature Matching')
     plt.axis('off')
     plt.show()
-    ```
+```
 
 ## 주요 코드 
 
@@ -193,8 +193,8 @@ SIFT 특징점을 사용하여 두 이미지 간 대응점을 찾고, 이를 바
 
 ## 전체 코드 (03_Homography.py)
 
-    ```python
-    import cv2 as cv
+```python
+import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -264,7 +264,7 @@ else:
 
     plt.tight_layout()
     plt.show()
-    ```
+```
 
 
 ## 주요 코드 
