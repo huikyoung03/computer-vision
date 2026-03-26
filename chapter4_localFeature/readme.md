@@ -99,7 +99,7 @@ nfeatures를 통해 검출할 최대 특징점의 개수를 제한함.
 
 ## 결과 화면 
 
-<img width="1200" height="600" alt="Figure_1" src="https://github.com/user-attachments/assets/9c2a272c-de76-4993-a755-32f6fbad56db" />
+<img width="1200" height="600" alt="Figure_1" src="https://github.com/user-attachments/assets/0c59fc07-210b-4798-a4b9-62da62196ff6" />
 
 ---
 # 2. SIFT를 이용한 두 영상 간 특징점 매칭
