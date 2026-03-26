@@ -99,6 +99,7 @@ nfeatures를 통해 검출할 최대 특징점의 개수를 제한함.
 
 ## 결과 화면 
 
+<img width="1200" height="600" alt="Figure_1" src="https://github.com/user-attachments/assets/9c2a272c-de76-4993-a755-32f6fbad56db" />
 
 ---
 # 2. SIFT를 이용한 두 영상 간 특징점 매칭
@@ -221,6 +222,7 @@ matches[:50]을 통해 정렬된 리스트 중 가장 정확한 50개만 그려 
 
 ## 결과 화면 
 
+<img width="1500" height="800" alt="Figure_2" src="https://github.com/user-attachments/assets/89ae98d4-2fae-4ebf-8035-ad4c5bfa9519" />
 
 
 ---
@@ -413,5 +415,7 @@ cv.RANSAC을 사용하여 여전히 남아있는 오매칭(Outlier)의 영향을
 이 때 캔버스는 두 이미지가 겹쳐질 수 있도록 가로 길이를 더한 크기(panorama_w)로 설정함.
 
 ## 결과 
+<img width="1709" height="800" alt="Figure_3" src="https://github.com/user-attachments/assets/207f7049-c50a-4db6-b17b-18298df4c898" />
+<img width="1709" height="800" alt="Figure_4" src="https://github.com/user-attachments/assets/04230eb7-4f78-4a4f-8f37-8398053458c7" />
 
 
