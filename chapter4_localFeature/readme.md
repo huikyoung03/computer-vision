@@ -69,7 +69,8 @@ else:
 
 ## 주요 코드 
    
-   sift = cv.SIFT_create(nfeatures=500)
+    sift = cv.SIFT_create(nfeatures=500)
+
 -> 크기(Scale)와 회전(Rotation)에 불변하는 특징점을 찾기 위한 SIFT 객체를 생성. 
 
 nfeatures를 통해 검출할 최대 특징점의 개수를 제한함.
@@ -271,7 +272,9 @@ else:
 
    matches = bf.knnMatch(des1, des2, k=2)
 -> 단순한 1:1 매칭이 아니라, 각 특징점에 대해 가장 유사한 이웃(Nearest Neighbor)을 k개(여기서는 2개)만큼 반환함.
+   
     if m.distance < 0.7 * n.distance:
+
 -> Lowe's ratio test를 적용. 
 
 가장 가까운 매칭점(1순위)과 두 번째로 가까운 매칭점(2순위)의 거리 차이가 명확할 때(즉, 확실하게 하나만 일치할 때)만 해당 점을 채택하여 오매칭을 크게 줄임. 
@@ -279,7 +282,7 @@ else:
     H, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)
 -> 선별된 좋은 매칭점들을 이용해 두 이미지 평면 간의 원근 변환 관계(호모그래피 행렬, 3x3)를 계산함. 
 
-    cv.RANSAC을 사용하여 여전히 남아있는 오매칭(Outlier)의 영향을 무시하고 안정적인 행렬을 계산함. 
+cv.RANSAC을 사용하여 여전히 남아있는 오매칭(Outlier)의 영향을 무시하고 안정적인 행렬을 계산함. 
     
     warped_img = cv.warpPerspective(img2, H, (panorama_w, panorama_h))
 -> 도출된 호모그래피 행렬 H를 이용해 입력 이미지(img2)의 모든 픽셀 좌표를 새로운 투시 공간으로 이동(변환)시킴. 
