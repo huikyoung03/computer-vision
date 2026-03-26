@@ -24,47 +24,62 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 
 # 1. 이미지 로드 (mot_color70.jpg)
-image_path = 'mot_color70.jpg'
-img = cv.imread(image_path)
+img = cv.imread('mot_color70.jpg')  
+# → 이미지를 BGR 컬러 형식으로 읽어옴 (OpenCV 기본 포맷)
+# → 실패 시 None 반환 (경로 확인 필요)
 
-if img is None:
-    print("이미지를 불러올 수 없습니다. 경로를 확인해주세요.")
-else:
-    # 에지 및 특징점 검출은 흑백 이미지에서 수행하는 것이 일반적
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  
+# → 컬러 이미지를 그레이스케일(단일 채널)로 변환
+# → SIFT는 intensity 기반이므로 grayscale 입력 사용
 
-    # 2. SIFT 객체 생성 (nfeatures로 특징점 개수 제한 가능)
-    # 너무 많은 특징점이 추출되는 것을 방지하기 위해 상위 500개만 추출하도록 설정
-    sift = cv.SIFT_create(nfeatures=500)
+# 2. SIFT 객체 생성 (특징점 최대 개수 제한)
+sift = cv.SIFT_create(nfeatures=3000)  
+# → SIFT(Scale-Invariant Feature Transform) 알고리즘 생성
+# → nfeatures=3000 : 검출할 특징점(keypoint)의 최대 개수 제한
+# → scale / rotation 변화에 강인한 특징점 검출 알고리즘
 
-    # 3. 특징점 검출
-    # detectAndCompute 함수는 특징점의 위치 정보(keypoints)와 
-    # 해당 특징점 주변의 패턴 정보(descriptors)를 함께 반환
-    keypoints, descriptors = sift.detectAndCompute(gray, None)
+# 3. 특징점 검출 + 디스크립터 생성
+keypoints, descriptors = sift.detectAndCompute(gray, None)  
+# → detect: 특징점 위치(keypoint) 찾기
+# → compute: 각 특징점에 대한 descriptor(128차원 벡터) 생성
+# → keypoints: 위치(x, y), 크기(scale), 방향(angle) 정보 포함 객체 리스트
+# → descriptors: (N x 128) numpy 배열 (각 keypoint의 특징 벡터)
 
-    # 4. 특징점 시각화 (방향과 크기 표시)
-    # flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS를 설정하면 
-    # 특징점의 위치뿐만 아니라 크기(원)와 방향(선)도 함께 그려줌
-    img_with_kp = cv.drawKeypoints(img, keypoints, None, 
-                                   flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+# 4. 특징점 시각화 (크기 + 방향까지 표시)
+img_with_kp = cv.drawKeypoints(
+    img,                  # 원본 이미지
+    keypoints,            # 검출된 특징점 리스트
+    None,                 # 출력 이미지 (None이면 새로 생성)
+    flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS
+)
+# → DRAW_RICH_KEYPOINTS 옵션:
+#    - 원으로 keypoint의 scale(크기) 표시
+#    - 방향(angle)을 선으로 표시
+# → 단순 점이 아니라 특징의 구조까지 시각화됨
 
-    # 5. 결과 출력 (Matplotlib)
-    plt.figure(figsize=(12, 6))
-    
-    # 첫 번째: 원본 이미지
-    plt.subplot(1, 2, 1)
-    plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
-    plt.title('Original Image')
-    plt.axis('off')
+# 5. 결과 출력 (matplotlib 사용)
+plt.figure(figsize=(12, 6))  
+# → 전체 figure 크기 설정
 
-    # 두 번째: 특징점이 표시된 이미지
-    plt.subplot(1, 2, 2)
-    plt.imshow(cv.cvtColor(img_with_kp, cv.COLOR_BGR2RGB))
-    plt.title('SIFT Keypoints (Rich)')
-    plt.axis('off')
+plt.subplot(1, 2, 1)  
+# → 1행 2열 중 첫 번째 subplot
 
-    plt.tight_layout()
-    plt.show()
+plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))  
+# → OpenCV(BGR) → matplotlib(RGB)로 색상 변환
+plt.title('Original Image')  
+plt.axis('off')  
+# → 축 제거 (이미지 시각화용)
+
+plt.subplot(1, 2, 2)  
+# → 두 번째 subplot
+
+plt.imshow(cv.cvtColor(img_with_kp, cv.COLOR_BGR2RGB))  
+# → 특징점이 표시된 이미지 출력
+plt.title('SIFT Keypoints (Rich)')  
+plt.axis('off')
+
+plt.show()  
+# → 화면에 결과 출력
 ```
 
 ## 주요 코드 
@@ -114,39 +129,77 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 
 # 1. 두 개의 이미지 불러오기
-img1 = cv.imread('mot_color70.jpg')
-img2 = cv.imread('mot_color83.jpg')
+img1 = cv.imread('mot_color70.jpg')  
+# → 첫 번째 이미지 로드 (BGR 형식)
+# → 특징점 기준이 되는 기준 이미지
 
-if img1 is None or img2 is None:
-    print("이미지를 불러올 수 없습니다. 경로를 확인해주세요.")
-else:
-    # 2. SIFT 특징점 및 기술자 추출
-    sift = cv.SIFT_create()
-    kp1, des1 = sift.detectAndCompute(img1, None)
-    kp2, des2 = sift.detectAndCompute(img2, None)
+img2 = cv.imread('mot_color83.jpg')  
+# → 두 번째 이미지 로드
+# → 비교 대상 이미지 (다른 시점/각도일 가능성 있음)
 
-    # 3. BFMatcher 생성 및 매칭
-    # cv.NORM_L2: SIFT 기술자 비교에 사용하는 유클리디안 거리 측정 방식
-    # crossCheck=True: 상호 매칭 검사를 통해 양방향으로 가장 가까운 쌍만 매칭으로 인정 (오매칭 감소)
-    bf = cv.BFMatcher(cv.NORM_L2, crossCheck=True)
-    matches = bf.match(des1, des2)
 
-    # 4. 거리에 따라 정렬 (선택 사항)
-    # distance 값이 작을수록 두 특징점이 매우 유사하다는 의미이므로 오름차순 정렬
-    matches = sorted(matches, key=lambda x: x.distance)
+# 2. SIFT 특징점 추출
+sift = cv.SIFT_create()  
+# → SIFT 객체 생성 (scale, rotation invariant 특징 추출)
 
-    # 5. 매칭 결과 시각화
-    # 상위 50개의 매칭 결과만 화면에 그려서 복잡함을 줄임
-    # flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS: 짝을 찾지 못한 특징점은 그리지 않음
-    res = cv.drawMatches(img1, kp1, img2, kp2, matches[:50], None, 
-                         flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+kp1, des1 = sift.detectAndCompute(img1, None)  
+# → img1에서 특징점 검출 + descriptor 생성
+# → kp1: keypoint 리스트 (위치, 크기, 방향 포함)
+# → des1: 각 keypoint의 128차원 특징 벡터
 
-    # 6. 결과 출력
-    plt.figure(figsize=(15, 8))
-    plt.imshow(cv.cvtColor(res, cv.COLOR_BGR2RGB))
-    plt.title('SIFT Feature Matching')
-    plt.axis('off')
-    plt.show()
+kp2, des2 = sift.detectAndCompute(img2, None)  
+# → img2에서도 동일하게 특징점 + descriptor 생성
+
+
+# 3. BFMatcher 생성 및 매칭
+bf = cv.BFMatcher(cv.NORM_L2, crossCheck=True)  
+# → Brute-Force Matcher 생성
+# → NORM_L2: SIFT descriptor는 float 기반 → 유클리드 거리 사용
+# → crossCheck=True:
+#    - A → B 매칭 + B → A 매칭이 서로 일치할 때만 인정
+#    - 더 정확하지만 매칭 수는 줄어듦 (정밀도 ↑, recall ↓)
+
+matches = bf.match(des1, des2)  
+# → 모든 descriptor 쌍을 비교해서 가장 가까운 매칭 찾음
+# → 결과: DMatch 객체 리스트
+#    - queryIdx: img1 descriptor index
+#    - trainIdx: img2 descriptor index
+#    - distance: 두 descriptor 간 거리 (작을수록 유사)
+
+
+# 4. 거리 기준으로 정렬 (좋은 매칭 우선)
+matches = sorted(matches, key=lambda x: x.distance)  
+# → distance가 작은 순서대로 정렬
+# → 가장 유사한 특징점 매칭이 앞쪽에 위치
+
+
+# 5. 매칭 결과 시각화
+res = cv.drawMatches(
+    img1, kp1,           # 첫 번째 이미지 + keypoints
+    img2, kp2,           # 두 번째 이미지 + keypoints
+    matches[:50],        # 상위 50개 매칭만 시각화
+    None,
+    flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
+)
+# → 두 이미지를 좌우로 붙이고 매칭된 점을 선으로 연결
+# → NOT_DRAW_SINGLE_POINTS:
+#    - 매칭되지 않은 keypoint는 표시하지 않음
+# → 결과:
+#    - 선 = 대응되는 특징점 쌍 (correspondence)
+
+
+# 6. matplotlib으로 결과 출력
+plt.figure(figsize=(15, 8))  
+# → 출력 이미지 크기 설정
+
+plt.imshow(cv.cvtColor(res, cv.COLOR_BGR2RGB))  
+# → OpenCV(BGR) → matplotlib(RGB) 변환
+
+plt.title('SIFT Feature Matching')  
+plt.axis('off')  
+
+plt.show()  
+# → 최종 결과 출력
 ```
 
 ## 주요 코드 
@@ -200,78 +253,147 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 1. 두 개의 이미지를 불러옴
-img1 = cv.imread('img2.jpg') 
-img2 = cv.imread('img3.jpg')
+img1 = cv.imread('img2.jpg')  
+# → 기준이 되는 첫 번째 이미지
+# → 최종 파노라마에서 왼쪽 기준 영상처럼 사용됨
 
-if img1 is None or img2 is None:
-    print("이미지를 불러올 수 없습니다.")
-else:
-    # 2. SIFT 특징점 검출
-    sift = cv.SIFT_create()
-    kp1, des1 = sift.detectAndCompute(img1, None)
-    kp2, des2 = sift.detectAndCompute(img2, None)
+img2 = cv.imread('img3.jpg')  
+# → 정합(alignment) 대상이 되는 두 번째 이미지
+# → 호모그래피를 이용해 img1 좌표계로 변환할 예정
 
-    # 3. BFMatcher와 knnMatch를 사용하여 특징점 매칭
-    # k=2: 각 특징점마다 가장 유사한 상위 2개의 매칭점을 찾음
-    bf = cv.BFMatcher()
-    matches = bf.knnMatch(des1, des2, k=2)
 
-    # 4. 거리 비율(Ratio Test)을 이용한 좋은 매칭점 선별
-    good_matches = []
-    for m, n in matches:
-        # 가장 가까운 매칭점(m)의 거리가 두 번째로 가까운 매칭점(n) 거리의 70% 미만일 때만 진짜 매칭으로 인정 (Lowe's ratio test)
-        if m.distance < 0.7 * n.distance:
-            good_matches.append(m)
+# 2. SIFT 특징점 검출
+sift = cv.SIFT_create()  
+# → SIFT 객체 생성
+# → 크기(scale), 회전(rotation) 변화에 강인한 특징점 검출기
 
-    # 매칭 결과 시각화용 이미지 생성 (Matching Result)
-    match_img = cv.drawMatches(img1, kp1, img2, kp2, good_matches, None, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+kp1, des1 = sift.detectAndCompute(img1, None)  
+# → img1에서 keypoint와 descriptor 추출
+# → kp1: 특징점 위치, 크기, 방향 정보
+# → des1: 각 특징점에 대한 128차원 descriptor
 
-    # 5. 호모그래피 행렬 계산
-    # 변환할 이미지(img2)의 특징점 좌표를 src_pts, 기준이 될 이미지(img1)의 좌표를 dst_pts로 설정
-    src_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
-    dst_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+kp2, des2 = sift.detectAndCompute(img2, None)  
+# → img2에서도 동일하게 특징점과 descriptor 추출
 
-    # RANSAC을 사용하여 잘못 매칭된 점들(이상점)의 영향을 배제하고 투시 변환 행렬(H)을 구함
-    H, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)
 
-    # 6. warpPerspective를 사용하여 변환 및 파노라마 캔버스 정렬
-    h1, w1 = img1.shape[:2]
-    h2, w2 = img2.shape[:2]
+# 3. BFMatcher와 knnMatch를 사용하여 특징점 매칭
+bf = cv.BFMatcher()  
+# → Brute-Force Matcher 생성
+# → 각 descriptor를 전수 비교하여 가장 가까운 대응점 탐색
+# → 기본적으로 SIFT에는 L2 distance가 사용됨
 
-    # 출력 크기를 두 이미지를 합친 넉넉한 파노라마 크기 (w1+w2, max(h1,h2))로 설정 
-    panorama_w = w1 + w2
-    panorama_h = max(h1, h2)
+matches = bf.knnMatch(des1, des2, k=2)  
+# → 각 des1의 특징점에 대해 img2에서 가장 가까운 2개 이웃을 찾음
+# → k=2로 두 개를 찾는 이유:
+#    Lowe's ratio test를 적용하기 위해서임
+# → 결과는 [[m, n], [m, n], ...] 형태
+#    m: 가장 가까운 매칭
+#    n: 두 번째로 가까운 매칭
 
-    # img2를 계산된 호모그래피 행렬(H)에 따라 img1의 시점으로 변환시킴 (배경 캔버스에 배치)
-    warped_img = cv.warpPerspective(img2, H, (panorama_w, panorama_h))
 
-    # 변환된 이미지의 제자리(왼쪽 위)에 기준이 되는 원본 img1을 덮어써서 두 이미지를 이어 붙임
-    warped_img[0:h1, 0:w1] = img1
+# 거리 비율이 임계값(0.7) 미만인 좋은 매칭점만 선별
+good_matches = []
+for m, n in matches:
+    if m.distance < 0.7 * n.distance:
+        good_matches.append(m)
+# → Lowe's ratio test
+# → 첫 번째 후보(m)가 두 번째 후보(n)보다 충분히 더 가깝다면
+#    '구분 가능한 좋은 매칭'으로 판단
+# → 잘못된 매칭(outlier)을 줄이는 데 매우 중요
+# → 0.7은 비교적 엄격한 기준
 
-    # 7. 결과 시각화
-    plt.figure(figsize=(20, 8))
 
-    # 특징점 매칭 결과 시각화
-    plt.subplot(1, 2, 1)
-    plt.imshow(cv.cvtColor(match_img, cv.COLOR_BGR2RGB))
-    plt.title('Matching Result')
-    plt.axis('off')
+# 매칭 결과 시각화용 이미지 생성
+match_img = cv.drawMatches(
+    img1, kp1,
+    img2, kp2,
+    good_matches,
+    None,
+    flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
+)
+# → 두 이미지를 좌우로 붙인 뒤
+#    good_matches에 해당하는 특징점 쌍만 선으로 연결하여 표시
+# → 매칭되지 않은 단일 keypoint는 그리지 않음
 
-    # 호모그래피 파노라마 결과 시각화
-    plt.subplot(1, 2, 2)
-    plt.imshow(cv.cvtColor(warped_img, cv.COLOR_BGR2RGB))
-    plt.title('Warped Image (Alignment)')
-    plt.axis('off')
 
-    plt.tight_layout()
-    plt.show()
+# 4. 호모그래피 행렬 계산
+# img2를 변환하여 img1 옆에 붙이는 방향으로 계산
+
+src_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+# → 원본 좌표(source points): img2의 매칭점들
+# → trainIdx는 des2(img2)의 descriptor 인덱스
+# → 즉, "변환할 쪽 이미지"의 좌표
+
+dst_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+# → 목적 좌표(destination points): img1의 매칭점들
+# → queryIdx는 des1(img1)의 descriptor 인덱스
+# → 즉, "기준이 되는 이미지"의 좌표
+
+# RANSAC을 사용하여 이상점 영향 줄임
+H, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)
+# → img2 좌표를 img1 좌표계로 사상하는 호모그래피 행렬 H 계산
+# → cv.RANSAC:
+#    잘못된 매칭점(outlier)이 섞여 있어도
+#    일관된 대응 관계만 이용해 강건하게 H를 추정
+# → 5.0:
+#    reprojection error threshold
+#    이 값보다 오차가 큰 대응점은 outlier로 판단
+# → mask:
+#    어떤 매칭점이 inlier인지 표시하는 배열
+
+
+# 5. warpPerspective를 사용하여 한 이미지를 변환하여 다른 이미지와 정렬
+h1, w1 = img1.shape[:2]
+h2, w2 = img2.shape[:2]
+# → 각 이미지의 높이(h), 너비(w) 추출
+
+# 출력 크기를 두 이미지를 합친 파노라마 크기 (w1+w2, max(h1,h2))로 설정
+panorama_w = w1 + w2
+panorama_h = max(h1, h2)
+# → 단순히 두 이미지를 좌우로 이어붙일 수 있도록 넉넉한 캔버스 크기 설정
+# → 실제 파노라마에서는 더 정교하게 bounding box를 계산하기도 함
+
+# img2를 img1 좌표계로 변환
+warped_img = cv.warpPerspective(img2, H, (panorama_w, panorama_h))
+# → 호모그래피 H를 사용해 img2를 투영 변환
+# → 결과적으로 img2가 img1과 같은 평면상에 정렬됨
+
+# 원본 img1을 변환된 캔버스의 제자리에 덮어쓰기
+warped_img[0:h1, 0:w1] = img1
+# → 기준 이미지 img1을 왼쪽 상단에 그대로 배치
+# → 현재는 단순 덮어쓰기 방식이라
+#    겹치는 영역의 블렌딩은 수행하지 않음
+# → 고급 파노라마에서는 feathering, multiband blending 등을 사용
+
+
+# 6. 변환된 이미지와 특징점 매칭 결과를 나란히 출력
+plt.figure(figsize=(20, 8))
+
+# 특징점 매칭 결과 (왼쪽)
+plt.subplot(1, 2, 1)
+plt.imshow(cv.cvtColor(match_img, cv.COLOR_BGR2RGB))
+# → OpenCV는 BGR, matplotlib은 RGB를 사용하므로 색상 변환 필요
+plt.title('Matching Result')
+plt.axis('off')
+
+# 호모그래피 정합 결과 (오른쪽)
+plt.subplot(1, 2, 2)
+plt.imshow(cv.cvtColor(warped_img, cv.COLOR_BGR2RGB))
+plt.title('Warped Image (Alignment)')
+plt.axis('off')
+
+plt.tight_layout()
+# → subplot 간격 자동 조정
+
+plt.show()
+# → 최종 결과 화면 출력
 ```
 
 
 ## 주요 코드 
 
    matches = bf.knnMatch(des1, des2, k=2)
-   
+
 -> 단순한 1:1 매칭이 아니라, 각 특징점에 대해 가장 유사한 이웃(Nearest Neighbor)을 k개(여기서는 2개)만큼 반환함.
    
     if m.distance < 0.7 * n.distance:
@@ -291,4 +413,5 @@ cv.RANSAC을 사용하여 여전히 남아있는 오매칭(Outlier)의 영향을
 이 때 캔버스는 두 이미지가 겹쳐질 수 있도록 가로 길이를 더한 크기(panorama_w)로 설정함.
 
 ## 결과 
+
 
