@@ -271,6 +271,7 @@ else:
 ## 주요 코드 
 
    matches = bf.knnMatch(des1, des2, k=2)
+   
 -> 단순한 1:1 매칭이 아니라, 각 특징점에 대해 가장 유사한 이웃(Nearest Neighbor)을 k개(여기서는 2개)만큼 반환함.
    
     if m.distance < 0.7 * n.distance:
