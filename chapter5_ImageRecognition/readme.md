@@ -187,7 +187,7 @@ plt.show()
 x_train = x_train / 255.0
 x_test = x_test / 255.0
 ```
--> 이미지의 픽셀 값은 원래 0~255 범위이므로, 이를 255.0으로 나누어 0~1 범위로 정규화함.
+-> 이미지의 픽셀 값은 원래 0 ~ 255 범위이므로, 이를 255.0으로 나누어 0 ~ 1 범위로 정규화함.
 이 과정은 학습을 더 안정적이고 빠르게 만들어준다.
 
 ```python
@@ -232,9 +232,8 @@ test_loss, test_acc = model.evaluate(x_test, y_test, verbose=0)
 
 ## 결과 화면 
 
-<img width="1200" height="600" alt="Figure_1" src="https://github.com/user-attachments/assets/9c2a272c-de76-4993-a755-32f6fbad56db" />
-
 ---
+
 # 2. CIFAR-10 데이터셋을 활용한 CNN 모델 구축
 
 ## 문제
@@ -409,7 +408,7 @@ predict_local_image('dog.jpg')
 ```python
 train_images, test_images = train_images / 255.0, test_images / 255.0
 ```
--> 이미지 픽셀 값은 원래 0~255 범위이므로, 이를 255.0으로 나누어 0~1 범위로 정규화한다.
+-> 이미지 픽셀 값은 원래 0 ~ 255 범위이므로, 이를 255.0으로 나누어 0 ~ 1 범위로 정규화한다.
 이 과정은 학습을 더 안정적으로 만들고 수렴 속도를 높이는 데 도움이 된다.
 
 ```python
@@ -485,7 +484,4 @@ score = tf.nn.softmax(predictions[0])
 이후 가장 높은 확률을 가진 클래스를 최종 예측 결과로 사용한다. 가로 길이를 더한 크기(panorama_w)로 설정함.
 
 ## 결과 
-<img width="1709" height="800" alt="Figure_3" src="https://github.com/user-attachments/assets/207f7049-c50a-4db6-b17b-18298df4c898" />
-<img width="1709" height="800" alt="Figure_4" src="https://github.com/user-attachments/assets/04230eb7-4f78-4a4f-8f37-8398053458c7" />
-
 
