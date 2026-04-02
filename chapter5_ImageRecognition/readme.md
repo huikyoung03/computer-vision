@@ -232,6 +232,8 @@ test_loss, test_acc = model.evaluate(x_test, y_test, verbose=0)
 
 ## 결과 화면 
 
+<img width="818" height="30" alt="Figure_3" src="https://github.com/user-attachments/assets/05e7bd86-c5ed-4c68-8a0a-cef8b0580569" />
+
 ---
 
 # 2. CIFAR-10 데이터셋을 활용한 CNN 모델 구축
@@ -484,4 +486,5 @@ score = tf.nn.softmax(predictions[0])
 이후 가장 높은 확률을 가진 클래스를 최종 예측 결과로 사용한다. 가로 길이를 더한 크기(panorama_w)로 설정함.
 
 ## 결과 
+<img width="763" height="186" alt="Figure_2" src="https://github.com/user-attachments/assets/0886e46b-22b8-4bc3-b94c-d1e99a74ee1e" />
 
