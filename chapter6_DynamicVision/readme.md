@@ -7,9 +7,13 @@ YOLOv3를 이용하여 영상에서 객체를 검출하고, SORT 알고리즘을
 ## 요구사항
 
 • YOLOv3를 이용한 객체 검출 수행
+
 • OpenCV DNN 모듈 사용
+
 • SORT 알고리즘 구현 (Kalman Filter + Hungarian Algorithm)
+
 • 프레임 간 객체 매칭 및 ID 유지
+
 • 결과를 영상으로 시각화
 
 ## 전체 코드 (01_SORT_tracking.py)
@@ -599,13 +603,14 @@ with open("coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
 ```
 → coco.names 파일을 읽어 각 클래스 이름을 리스트로 저장한다.
+
 ```python
 class_id = np.argmax(scores)
 class_name = classes[class_id]
 ```
 → YOLO 출력의 class_id를 이용하여 실제 객체 이름으로 변환한다.
 
-``python
+```python
 TARGET_CLASSES = {"car", "bus", "truck", "motorbike", "person", "bicycle"}
 ```
 → 모든 객체가 아니라 교통 및 사람 관련 객체만 필터링하여 추적을 수행하였다.
@@ -659,7 +664,8 @@ tracks = mot_tracker.update(detections, det_classes)
 
 ## 결과 화면 
 
-<img width="1200" height="600" alt="Figure_1" src="C:\Users\huig1\Documents\dongauniv\컴퓨터 비전\computer-vision\chapter6_DynamicVision\output\figure1.png" />
+<img width="965" height="596" alt="figure1" src="https://github.com/user-attachments/assets/ba241f4f-a74c-4621-a2a6-db0a5f0e9c7f" />
+
 
 ---
 # 2. Mediapipe를 활용한 얼굴랜드마크추출및시각화
@@ -778,6 +784,6 @@ cap = cv2.VideoCapture(0)
 -> 웹캠을 열어 실시간 영상을 입력받는다.
 
 ## 결과 
-<img width="1200" height="600" alt="Figure_2" src="C:\Users\huig1\Documents\dongauniv\컴퓨터 비전\computer-vision\chapter6_DynamicVision\output\figure2.png" />
 
+<img width="956" height="764" alt="figure2" src="https://github.com/user-attachments/assets/5a3afb89-465c-4248-a217-a736d1319cb4" />
 
